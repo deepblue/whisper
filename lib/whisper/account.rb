@@ -1,0 +1,2 @@
+class Whisper::Account
+end
