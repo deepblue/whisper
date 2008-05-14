@@ -1,0 +1,3 @@
+
+For more information on whisper, see http://myruby.net/pages/1182106
+

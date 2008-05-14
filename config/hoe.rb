@@ -7,6 +7,11 @@ GEM_NAME = 'whisper' # what ppl will type to install your gem
 RUBYFORGE_PROJECT = 'springnote' # The unix name for your project
 HOMEPATH = "http://#{RUBYFORGE_PROJECT}.rubyforge.org/whisper"
 DOWNLOAD_PATH = "http://rubyforge.org/projects/#{RUBYFORGE_PROJECT}"
+EXTRA_DEPENDENCIES = [
+  'activesupport',
+  'oauth',
+  'ruby-hmac'
+]    # An array of rubygem dependencies [name, version]
 
 @config_file = "~/.rubyforge/user-config.yml"
 @config = nil
@@ -28,26 +33,26 @@ Run 'rubyforge setup' to prepare your env for access to Rubyforge
 end
 
 
-REV = nil 
-# UNCOMMENT IF REQUIRED: 
-# REV = `svn info`.each {|line| if line =~ /^Revision:/ then k,v = line.split(': '); break v.chomp; else next; end} rescue nil
+REV = nil
+# UNCOMMENT IF REQUIRED:
+# REV = YAML.load(`svn info`)['Revision']
 VERS = Whisper::VERSION::STRING + (REV ? ".#{REV}" : "")
 RDOC_OPTS = ['--quiet', '--title', 'whisper documentation',
     "--opname", "index.html",
-    "--line-numbers", 
+    "--line-numbers",
     "--main", "README",
     "--inline-source"]
 
 class Hoe
-  def extra_deps 
-    @extra_deps.reject! { |x| Array(x).first == 'hoe' } 
+  def extra_deps
+    @extra_deps.reject! { |x| Array(x).first == 'hoe' }
     @extra_deps
-  end 
+  end
 end
 
 # Generate all the Rake tasks
 # Run 'rake -T' to see list of generated tasks (from gem root directory)
-hoe = Hoe.new(GEM_NAME, VERS) do |p|
+$hoe = Hoe.new(GEM_NAME, VERS) do |p|
   p.developer(AUTHOR, EMAIL)
   p.description = DESCRIPTION
   p.summary = DESCRIPTION
@@ -55,16 +60,16 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
   p.rubyforge_name = RUBYFORGE_PROJECT if RUBYFORGE_PROJECT
   p.test_globs = ["test/**/test_*.rb"]
   p.clean_globs |= ['**/.*.sw?', '*.gem', '.config', '**/.DS_Store']  #An array of file patterns to delete on clean.
-  
+
   # == Optional
   p.changes = p.paragraphs_of("History.txt", 0..1).join("\n\n")
-  p.extra_deps = %w(oauth ruby-hmac active_support)     # An array of rubygem dependencies [name, version], e.g. [ ['active_support', '>= 1.3.1'] ]
-  
-  #p.spec_extras = {}    # A hash of extra values to set in the gemspec.
-  
-end
+  p.extra_deps = EXTRA_DEPENDENCIES
 
-CHANGES = hoe.paragraphs_of('History.txt', 0..1).join("\\n\\n")
+    #p.spec_extras = {}    # A hash of extra values to set in the gemspec.
+  end
+
+CHANGES = $hoe.paragraphs_of('History.txt', 0..1).join("\\n\\n")
 PATH    = (RUBYFORGE_PROJECT == GEM_NAME) ? RUBYFORGE_PROJECT : "#{RUBYFORGE_PROJECT}/#{GEM_NAME}"
-hoe.remote_rdoc_dir = File.join(PATH.gsub(/^#{RUBYFORGE_PROJECT}\/?/,''), 'rdoc')
-hoe.rsync_args = '-av --delete --ignore-errors'
+$hoe.remote_rdoc_dir = File.join(PATH.gsub(/^#{RUBYFORGE_PROJECT}\/?/,''), 'rdoc')
+$hoe.rsync_args = '-av --delete --ignore-errors'
+$hoe.spec.post_install_message = File.open(File.dirname(__FILE__) + "/../PostInstall.txt").read rescue ""
